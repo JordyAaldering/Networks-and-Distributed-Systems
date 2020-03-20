@@ -1,28 +1,27 @@
-import socket
-from btcp.lossy_layer import LossyLayer
-from btcp.btcp_socket import BTCPSocket
-from btcp.constants import *
+from src.btcp.btcp_socket import BTCPSocket
+from src.btcp.constants import *
+from src.btcp.lossy_layer import LossyLayer
 
 
-# The bTCP server socket
-# A server application makes use of the services provided by bTCP by calling accept, recv, and close
 class BTCPServerSocket(BTCPSocket):
+    """A server application makes use of the services provided by bTCP by calling accept, recv, and close."""
+
     def __init__(self, window, timeout):
         super().__init__(window, timeout)
-        self._lossy_layer = LossyLayer(self, SERVER_IP, SERVER_PORT, CLIENT_IP, CLIENT_PORT)
+        self.lossy_layer = LossyLayer(self, SERVER_IP, SERVER_PORT, CLIENT_IP, CLIENT_PORT)
 
-    # Called by the lossy layer from another thread whenever a segment arrives
     def lossy_layer_input(self, segment):
+        """Called by the lossy layer from another thread whenever a segment arrives."""
         pass
 
-    # Wait for the client to initiate a three-way handshake
     def accept(self):
+        """Wait for the client to initiate a three-way handshake."""
         pass
 
-    # Send any incoming data to the application layer
     def recv(self):
+        """Send any incoming data to the application layer."""
         pass
 
-    # Clean up any state
     def close(self):
-        self._lossy_layer.destroy()
+        """Clean up any state."""
+        self.lossy_layer.destroy()

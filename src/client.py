@@ -1,7 +1,8 @@
 #!/usr/local/bin/python3
 
 import argparse
-from btcp.client_socket import BTCPClientSocket
+
+from src.btcp.client_socket import BTCPClientSocket
 
 
 def main():
@@ -11,12 +12,15 @@ def main():
     parser.add_argument("-i", "--input", help="File to send", default="input.file")
     args = parser.parse_args()
 
-    # Create a bTCP client socket with the given window size and timeout value
+    # Create a bTCP client socket with the given window size and timeout value.
     s = BTCPClientSocket(args.window, args.timeout)
-    # TODO Write your file transfer clientcode using your implementation of BTCPClientSocket's connect, send, and disconnect methods.
 
-    # Clean up any state
+    # TODO Write your file transfer client code using your implementation of
+    #  BTCPClientSocket's connect, send, and disconnect methods.
+
+    # Clean up any state.
     s.close()
 
 
-main()
+if __name__ == '__main__':
+    main()
