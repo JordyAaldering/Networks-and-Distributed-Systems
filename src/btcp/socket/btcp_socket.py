@@ -1,7 +1,11 @@
+from socket import socket, AF_INET, SOCK_STREAM
+
+
 class BTCPSocket:
     def __init__(self, window, timeout):
-        self._window = window
-        self._timeout = timeout
+        self.socket = socket(AF_INET, SOCK_STREAM)
+        self.window = window
+        self.timeout = timeout
 
     @staticmethod
     def in_checksum(data):
