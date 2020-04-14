@@ -1,3 +1,3 @@
 # Networks and Distributed Systems
-* Jordy Aaldering
-* Maria
+  - Jordy Aaldering, s1004292
+  - Maria ..., s...
