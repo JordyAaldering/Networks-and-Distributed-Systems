@@ -1,4 +1,4 @@
-from src.btcp.btcp_socket import BTCPSocket
+from src.btcp.socket.btcp_socket import BTCPSocket
 from src.btcp.constants import *
 from src.btcp.lossy_layer import LossyLayer
 

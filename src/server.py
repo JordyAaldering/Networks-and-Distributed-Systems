@@ -2,7 +2,7 @@
 
 import argparse
 
-from src.btcp.server_socket import BTCPServerSocket
+from src.btcp.socket.server_socket import BTCPServerSocket
 
 
 def main():

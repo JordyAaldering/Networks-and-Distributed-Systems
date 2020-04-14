@@ -2,7 +2,7 @@
 
 import argparse
 
-from src.btcp.client_socket import BTCPClientSocket
+from src.btcp.socket.client_socket import BTCPClientSocket
 
 
 def main():
