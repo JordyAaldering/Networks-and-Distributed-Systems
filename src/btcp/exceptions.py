@@ -1,0 +1,2 @@
+class ChecksumsNotEqual(Exception):
+    pass
