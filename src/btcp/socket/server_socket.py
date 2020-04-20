@@ -24,10 +24,14 @@ class BTCPServerSocket(BTCPSocket):
 
     def accept(self):
         """Wait for the client to initiate a three-way handshake."""
-        msg = self.socket.recv(10)
-        recv_packet = Packet.from_bytes(msg)
+        client = self.socket.accept()
+        print(f"Connected with {client[1][0]}:{str(client[1][1])}")
 
-        if (not recv_packet.header.syn()):
+        msg = client[0].recv(HEADER_SIZE)
+        recv_packet = Packet.from_bytes(msg)
+        print(f"Receive packet: {recv_packet}")
+
+        if not recv_packet.header.syn():
             print("SYN flag not set")
             return
         
@@ -35,12 +39,12 @@ class BTCPServerSocket(BTCPSocket):
         y = randrange(65536)
 
         header = Header(x + 1, y, Header.build_flags(syn=True, ack=True), self.window)
-        packet = Packet(header, '')
+        packet = Packet(header, bytes())
 
         self.socket.sendto(packet, (CLIENT_IP, CLIENT_PORT))
 
         try: 
-            msg = self.socket.recv(10)
+            msg = self.socket.recv(HEADER_SIZE)
         except:
             print("Socket timeout")
             return
@@ -61,7 +65,7 @@ class BTCPServerSocket(BTCPSocket):
         
         # should return a tuple (host,port) -> conn,addr = s.accept() -> new socket object
         #       used to communicate with the client, different socket than the listening
-        return self.socket.accept()
+        return client
 
     def recv(self) -> bytes:
         """Send any incoming data to the application layer."""

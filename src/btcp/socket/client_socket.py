@@ -28,13 +28,15 @@ class BTCPClientSocket(BTCPSocket):
         """Perform a three-way handshake to establish a connection."""
         x = randrange(65536)
 
+        self.socket.connect((SERVER_IP, SERVER_PORT))
+
         for i in range(self.tries):
             header = Header(x, 0, Header.build_flags(syn=True), self.window)
             packet = Packet(header, bytes())
-            self.socket.sendto(bytes(packet), (SERVER_IP, SERVER_PORT))
+            self.socket.send(bytes(packet))
 
             try: 
-                msg = self.socket.recv(10)
+                msg = self.socket.recv(HEADER_SIZE)
             except:
                 print("Socket timeout")
                 x += 1
@@ -54,9 +56,9 @@ class BTCPClientSocket(BTCPSocket):
             y = recv_packet.header.seq_number
             header = Header(x + 2, y + 1, Header.build_flags(syn=True, ack=True), self.window)
             packet = Packet(header, bytes(''))
-            self.socket.sendto(packet, (SERVER_IP, SERVER_PORT))
+            self.socket.send(packet)
 
-            self.socket.connect((SERVER_IP, SERVER_PORT))
+
 
     def send(self, data: bytes):
         """Send data originating from the application in a reliable way to the server.""" 
