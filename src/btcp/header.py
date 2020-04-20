@@ -1,19 +1,26 @@
 from src.btcp.constants import HEADER_FORMAT
 import struct
+
+
 class Header:
-    
-    def __init__(self, seq_number: int, ack_number: int, flags: int, 
-            window_size: int, data_length: int = 0, checksum: int = 0):
+
+    def __init__(self, seq_number: int, ack_number: int, flags: int,
+                 window: int, data_length: int = 0, checksum: int = 0):
         self.seq_number = seq_number
         self.ack_number = ack_number
         self.flags = flags
-        self.window_size = window_size
+        self.window = window
         self.data_length = data_length
         self.checksum = checksum
 
     def __bytes__(self):
-        return struct.pack(HEADER_FORMAT, self.seq_number, self.ack_number,
-            self.flags, self.window_size, self.data_length, self.checksum)
+        return struct.pack(HEADER_FORMAT,
+                           self.seq_number,
+                           self.ack_number,
+                           self.flags,
+                           self.window,
+                           self.data_length,
+                           self.checksum)
 
     @classmethod
     def from_bytes(cls, msg: bytes):
@@ -25,7 +32,7 @@ class Header:
 
     def ack(self) -> bool:
         return self.flags >> 2 & 1 == 1
-    
+
     def syn(self) -> bool:
         return self.flags >> 1 & 1 == 1
 

@@ -30,7 +30,7 @@ class BTCPClientSocket(BTCPSocket):
 
         for i in range(self.tries):
             header = Header(x, 0, Header.build_flags(syn=True), self.window)
-            packet = Packet(header, '')
+            packet = Packet(header, bytes())
             self.socket.sendto(bytes(packet), (SERVER_IP, SERVER_PORT))
 
             try: 
