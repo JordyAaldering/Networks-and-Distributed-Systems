@@ -3,6 +3,7 @@
 import argparse
 
 from src.btcp.socket.client_socket import BTCPClientSocket
+from src.btcp.constants import *
 
 
 def main():
@@ -17,7 +18,9 @@ def main():
 
     # TODO Write your file transfer client code using your implementation of
     #  BTCPClientSocket's connect, send, and disconnect methods.
-
+    s.connect()
+    s.send(bytes("Hello, World!"))
+    
     # Clean up any state.
     s.close()
 

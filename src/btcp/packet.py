@@ -4,8 +4,6 @@ from src.btcp.exceptions import ChecksumsNotEqual
 from src.btcp.header import Header
 from src.btcp.constants import HEADER_SIZE
 
-# Explanation of checksum: https://tools.ietf.org/html/rfc1071
-# Calculating checksum: https://www.bitforestinfo.com/2018/01/python-codes-to-calculate-tcp-checksum.html
 
 class Packet:
 

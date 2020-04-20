@@ -1,9 +1,9 @@
 from src.btcp.constants import HEADER_FORMAT
-
+import struct
 class Header:
     
     def __init__(self, seq_number: int, ack_number: int, flags: int, 
-            window_size: int, data_length: int, checksum: int = 0):
+            window_size: int, data_length: int = 0, checksum: int = 0):
         self.seq_number = seq_number
         self.ack_number = ack_number
         self.flags = flags
@@ -19,8 +19,9 @@ class Header:
     def from_bytes(cls, msg: bytes):
         return cls(*struct.unpack(HEADER_FORMAT, msg))
 
-    def build_flags(self, ack: bool, syn: bool, fin: bool):
-        self.flags = ack << 2 | syn << 1 | fin << 0
+    @staticmethod
+    def build_flags(self, ack: bool = False, syn: bool = False, fin: bool = False) -> int:
+        return ack << 2 | syn << 1 | fin << 0
 
     def ack(self) -> bool:
         return self.flags >> 2 & 1
