@@ -38,3 +38,8 @@ class Header:
 
     def fin(self) -> bool:
         return self.flags >> 0 & 1 == 1
+
+    def __str__(self):
+        return f"{self.seq_number:08}, {self.ack_number:08}, " \
+               f"ACK:{self.ack()}, SYN:{self.syn()}, FIN:{self.fin()}, " \
+               f"{self.checksum:08}"

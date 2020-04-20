@@ -43,22 +43,22 @@ class BTCPClientSocket(BTCPSocket):
                 continue
 
             recv_packet = Packet.from_bytes(msg)
-            if x + 1 != recv_packet.header.ack_number:
-                print("ACK not x + 1")
-                continue
-            if not recv_packet.header.syn():
-                print("SYN flag not set")
-                continue
-            if not recv_packet.header.ack():
-                print("ACK flag not set")
-                continue
+            # if x + 1 != recv_packet.header.ack_number:
+            #     print("ACK not x + 1")
+            #     continue
+            # if not recv_packet.header.syn():
+            #     print("SYN flag not set")
+            #     continue
+            # if not recv_packet.header.ack():
+            #     print("ACK flag not set")
+            #     continue
 
             y = recv_packet.header.seq_number
             header = Header(x + 2, y + 1, Header.build_flags(syn=True, ack=True), self.window)
-            packet = Packet(header, bytes(''))
-            self.socket.send(packet)
+            packet = Packet(header, bytes())
+            self.socket.send(bytes(packet))
 
-
+            break
 
     def send(self, data: bytes):
         """Send data originating from the application in a reliable way to the server.""" 

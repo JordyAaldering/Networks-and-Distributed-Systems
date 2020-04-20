@@ -28,3 +28,6 @@ class Packet:
             raise ChecksumsNotEqual
         
         return cls(header, msg[HEADER_SIZE:])
+
+    def __str__(self):
+        return f"{str(self.header)}: {self.data.decode('utf-8')}"

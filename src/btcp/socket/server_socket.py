@@ -29,7 +29,7 @@ class BTCPServerSocket(BTCPSocket):
 
         msg = client[0].recv(HEADER_SIZE)
         recv_packet = Packet.from_bytes(msg)
-        print(f"Receive packet: {recv_packet}")
+        print(f"Receive packet: {str(recv_packet)}")
 
         if not recv_packet.header.syn():
             print("SYN flag not set")
@@ -41,27 +41,27 @@ class BTCPServerSocket(BTCPSocket):
         header = Header(x + 1, y, Header.build_flags(syn=True, ack=True), self.window)
         packet = Packet(header, bytes())
 
-        self.socket.sendto(packet, (CLIENT_IP, CLIENT_PORT))
+        client[0].send(bytes(packet))
 
         try: 
-            msg = self.socket.recv(HEADER_SIZE)
+            msg = client[0].recv(HEADER_SIZE)
         except:
             print("Socket timeout")
             return
         
         recv_packet = Packet.from_bytes(msg)
-        if x + 1 != recv_packet.header.ack_number:
-            print("ACK not x + 1")
-            return
-        if y + 1 != recv_packet.header.syn_number:
-            print("ACK not x + 1")
-            return
-        if not recv_packet.header.syn():
-            print("SYN flag not set")
-            return
-        if not recv_packet.header.ack():
-            print("ACK flag not set")
-            return
+        # if x + 1 != recv_packet.header.ack_number:
+        #     print("ACK not x + 1")
+        #     return
+        # if y + 1 != recv_packet.header.syn_number:
+        #     print("SYN not x + 1")
+        #     return
+        # if not recv_packet.header.syn():
+        #     print("SYN flag not set")
+        #     return
+        # if not recv_packet.header.ack():
+        #     print("ACK flag not set")
+        #     return
         
         # should return a tuple (host,port) -> conn,addr = s.accept() -> new socket object
         #       used to communicate with the client, different socket than the listening
@@ -69,7 +69,7 @@ class BTCPServerSocket(BTCPSocket):
 
     def recv(self) -> bytes:
         """Send any incoming data to the application layer."""
-        return self.socket.recv()
+        return self.socket.recv(1024)
 
     def close(self):
         """Clean up any state."""
