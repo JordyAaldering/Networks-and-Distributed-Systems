@@ -1,5 +1,6 @@
-from src.btcp.constants import HEADER_FORMAT
 import struct
+
+from src.btcp.constants import HEADER_FORMAT
 
 
 class Header:
@@ -42,4 +43,4 @@ class Header:
     def __str__(self):
         return f"{self.seq_number:08}, {self.ack_number:08} | " \
                f"ACK: {self.ack():d}, SYN: {self.syn():d}, FIN: {self.fin():d} | " \
-               f"{self.checksum:012}"
+               f"{self.checksum:08}"

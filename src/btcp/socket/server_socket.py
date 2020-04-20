@@ -1,11 +1,11 @@
-from src.btcp.socket.btcp_socket import BTCPSocket
 from random import randrange
-
-from src.btcp.header import Header
-from src.btcp.packet import Packet
+from socket import timeout as TimeoutException
 
 from src.btcp.constants import *
+from src.btcp.header import Header
 from src.btcp.lossy_layer import LossyLayer
+from src.btcp.packet import Packet
+from src.btcp.socket.btcp_socket import BTCPSocket
 
 
 class BTCPServerSocket(BTCPSocket):
@@ -38,7 +38,7 @@ class BTCPServerSocket(BTCPSocket):
         x = recv_packet.header.seq_number
         y = randrange(65536)
 
-        header = Header(x + 1, y, Header.build_flags(syn=True, ack=True), self.window)
+        header = Header(y, x + 1, Header.build_flags(syn=True, ack=True), self.window)
         packet = Packet(header, bytes())
 
         client[0].send(bytes(packet))
@@ -46,24 +46,25 @@ class BTCPServerSocket(BTCPSocket):
 
         try: 
             msg = client[0].recv(HEADER_SIZE)
-        except:
-            print("Socket timeout")
+        except TimeoutException as e:
+            print(f"Socket timeout: {e}")
             return
         
         recv_packet = Packet.from_bytes(msg)
         print(f"Server recv packet: {str(recv_packet)}")
-        # if x + 1 != recv_packet.header.ack_number:
-        #     print("ACK not x + 1")
-        #     return
-        # if y + 1 != recv_packet.header.syn_number:
-        #     print("SYN not x + 1")
-        #     return
-        # if not recv_packet.header.syn():
-        #     print("SYN flag not set")
-        #     return
-        # if not recv_packet.header.ack():
-        #     print("ACK flag not set")
-        #     return
+
+        if x + 1 != recv_packet.header.seq_number:
+            print("ACK not x + 1")
+            return
+        if y + 1 != recv_packet.header.ack_number:
+            print("SYN not y + 1")
+            return
+        if not recv_packet.header.syn():
+            print("SYN flag not set")
+            return
+        if not recv_packet.header.ack():
+            print("ACK flag not set")
+            return
         
         # should return a tuple (host,port) -> conn,addr = s.accept() -> new socket object
         #       used to communicate with the client, different socket than the listening
