@@ -40,6 +40,6 @@ class Header:
         return self.flags >> 0 & 1 == 1
 
     def __str__(self):
-        return f"{self.seq_number:08}, {self.ack_number:08}, " \
-               f"ACK:{self.ack()}, SYN:{self.syn()}, FIN:{self.fin()}, " \
-               f"{self.checksum:08}"
+        return f"{self.seq_number:08}, {self.ack_number:08} | " \
+               f"ACK: {self.ack():d}, SYN: {self.syn():d}, FIN: {self.fin():d} | " \
+               f"{self.checksum:012}"

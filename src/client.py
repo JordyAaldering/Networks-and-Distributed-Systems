@@ -16,9 +16,9 @@ def main():
 
     # TODO Write your file transfer client code using your implementation of
     #  BTCPClientSocket's connect, send, and disconnect methods.
-    print("Start connect loop")
     s.connect()
     s.send(bytes("Hello, World!", "utf-8"))
+    s.close()
 
 
 if __name__ == '__main__':

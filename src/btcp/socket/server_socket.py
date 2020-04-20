@@ -25,11 +25,11 @@ class BTCPServerSocket(BTCPSocket):
     def accept(self):
         """Wait for the client to initiate a three-way handshake."""
         client = self.socket.accept()
-        print(f"Connected with {client[1][0]}:{str(client[1][1])}")
+        print(f"Server connected: {client[1][0]}:{str(client[1][1])}")
 
         msg = client[0].recv(HEADER_SIZE)
         recv_packet = Packet.from_bytes(msg)
-        print(f"Receive packet: {str(recv_packet)}")
+        print(f"Server recv packet: {str(recv_packet)}")
 
         if not recv_packet.header.syn():
             print("SYN flag not set")
@@ -42,6 +42,7 @@ class BTCPServerSocket(BTCPSocket):
         packet = Packet(header, bytes())
 
         client[0].send(bytes(packet))
+        print(f"Server send packet: {str(packet)}")
 
         try: 
             msg = client[0].recv(HEADER_SIZE)
@@ -50,6 +51,7 @@ class BTCPServerSocket(BTCPSocket):
             return
         
         recv_packet = Packet.from_bytes(msg)
+        print(f"Server recv packet: {str(recv_packet)}")
         # if x + 1 != recv_packet.header.ack_number:
         #     print("ACK not x + 1")
         #     return
@@ -67,9 +69,12 @@ class BTCPServerSocket(BTCPSocket):
         #       used to communicate with the client, different socket than the listening
         return client
 
-    def recv(self) -> bytes:
+    def recv(self) -> Packet:
         """Send any incoming data to the application layer."""
-        return self.socket.recv(1024)
+        recv = self.socket.recv(1024)
+        packet = Packet.from_bytes(recv)
+        print(f"Server recv packet: {str(packet)}")
+        return packet
 
     def close(self):
         """Clean up any state."""

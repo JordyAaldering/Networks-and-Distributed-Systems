@@ -29,11 +29,14 @@ class BTCPClientSocket(BTCPSocket):
         x = randrange(65536)
 
         self.socket.connect((SERVER_IP, SERVER_PORT))
+        print(f"Client connected: {SERVER_IP}:{SERVER_PORT}")
 
         for i in range(self.tries):
             header = Header(x, 0, Header.build_flags(syn=True), self.window)
             packet = Packet(header, bytes())
+
             self.socket.send(bytes(packet))
+            print(f"Client send packet: {str(packet)}")
 
             try: 
                 msg = self.socket.recv(HEADER_SIZE)
@@ -43,6 +46,8 @@ class BTCPClientSocket(BTCPSocket):
                 continue
 
             recv_packet = Packet.from_bytes(msg)
+            print(f"Client recv packet: {str(recv_packet)}")
+
             # if x + 1 != recv_packet.header.ack_number:
             #     print("ACK not x + 1")
             #     continue
@@ -56,7 +61,9 @@ class BTCPClientSocket(BTCPSocket):
             y = recv_packet.header.seq_number
             header = Header(x + 2, y + 1, Header.build_flags(syn=True, ack=True), self.window)
             packet = Packet(header, bytes())
+
             self.socket.send(bytes(packet))
+            print(f"Client send packet: {str(packet)}")
 
             break
 

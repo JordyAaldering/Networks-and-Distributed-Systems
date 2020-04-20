@@ -17,12 +17,8 @@ def main():
 
     # TODO Write your file transfer server code here using
     #  your BTCPServerSocket's accept, and recv methods.
-    print("Start accept loop")
     client = s.accept()
-    print("Finish accept loop")
-
-    data = client[0].recv(1024)
-    packet = Packet.from_bytes(data)
+    packet = client[0].recv(1024)
     print(str(packet))
 
     s.close()
