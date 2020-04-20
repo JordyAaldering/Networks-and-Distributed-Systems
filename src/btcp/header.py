@@ -20,14 +20,14 @@ class Header:
         return cls(*struct.unpack(HEADER_FORMAT, msg))
 
     @staticmethod
-    def build_flags(self, ack: bool = False, syn: bool = False, fin: bool = False) -> int:
+    def build_flags(ack: bool = False, syn: bool = False, fin: bool = False) -> int:
         return ack << 2 | syn << 1 | fin << 0
 
     def ack(self) -> bool:
-        return self.flags >> 2 & 1
+        return self.flags >> 2 & 1 == 1
     
     def syn(self) -> bool:
-        return self.flags >> 1 & 1
+        return self.flags >> 1 & 1 == 1
 
     def fin(self) -> bool:
-        return self.flags >> 0 & 1
+        return self.flags >> 0 & 1 == 1

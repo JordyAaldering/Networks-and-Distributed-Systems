@@ -41,27 +41,27 @@ class BTCPServerSocket(BTCPSocket):
 
         try: 
             msg = self.socket.recv(10)
-        except socket.timeout:
+        except:
             print("Socket timeout")
-            continue
+            return
         
         recv_packet = Packet.from_bytes(msg)
-        if (x + 1 != recv_packet.header.ack_number):
+        if x + 1 != recv_packet.header.ack_number:
             print("ACK not x + 1")
-            continue
-        if (y + 1 != recv_packet.header.syn_number):
+            return
+        if y + 1 != recv_packet.header.syn_number:
             print("ACK not x + 1")
-            continue
-        if (not recv_packet.header.syn())
+            return
+        if not recv_packet.header.syn():
             print("SYN flag not set")
-            continue
-        if (not recv_packet.header.ack())
+            return
+        if not recv_packet.header.ack():
             print("ACK flag not set")
-            continue
+            return
         
         # should return a tuple (host,port) -> conn,addr = s.accept() -> new socket object
         #       used to communicate with the client, different socket than the listening
-        return s.accept()
+        return self.socket.accept()
 
     def recv(self) -> bytes:
         """Send any incoming data to the application layer."""

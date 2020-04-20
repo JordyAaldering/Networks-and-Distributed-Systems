@@ -1,4 +1,4 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, timeout, AF_INET, SOCK_STREAM
 
 class BTCPSocket:
     def __init__(self, window, timeout):
@@ -20,7 +20,7 @@ class BTCPSocket:
             elif i + 1 == len(data):
                 s += ord(data[i])
             else:
-                raise "Something Wrong here"
+                raise Exception("Something Wrong here")
 
         s = s + (s >> 16)
         s = ~s & 0xffff
