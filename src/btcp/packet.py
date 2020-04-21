@@ -20,10 +20,10 @@ class Packet:
     @classmethod
     def from_bytes(cls, msg: bytes):
         header = Header.from_bytes(msg[:HEADER_SIZE])
-        checksum = header.checksum  # before the data is sent
+        checksum = header.checksum
 
         header.checksum = 0
-        if False and checksum != BTCPSocket.calculate_checksum(msg):
+        if checksum != BTCPSocket.calculate_checksum(bytes(header) + msg[HEADER_SIZE:]):
             raise ChecksumsNotEqual
         
         return cls(header, msg[HEADER_SIZE:])

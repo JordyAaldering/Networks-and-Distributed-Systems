@@ -22,12 +22,12 @@ class BTCPClientSocket(BTCPSocket):
         """Called by the lossy layer from another thread whenever a segment arrives."""
         pass
 
-    def connect(self):
+    def connect(self) -> bool:
         """Perform a three-way handshake to establish a connection."""
-        x = randrange(65536)
-
         self.socket.connect((SERVER_IP, SERVER_PORT))
-        print(f"Client connected: {SERVER_IP}:{SERVER_PORT}")
+        print(f"Client connecting: {SERVER_IP}:{SERVER_PORT}")
+
+        x = randrange(65536)
 
         for i in range(5):
             header = Header(x, 0, Header.build_flags(syn=True), self.window)
@@ -38,22 +38,23 @@ class BTCPClientSocket(BTCPSocket):
 
             try: 
                 msg = self.socket.recv(HEADER_SIZE)
+                recv_packet = Packet.from_bytes(msg)
+                print(f"Client recv packet: {str(recv_packet)}")
             except TimeoutException as e:
                 print(f"Socket timeout: {e}")
                 x += 1
                 continue
 
-            recv_packet = Packet.from_bytes(msg)
-            print(f"Client recv packet: {str(recv_packet)}")
-
-            if x + 1 != recv_packet.header.ack_number:
-                print("ACK not x + 1")
-                continue
             if not recv_packet.header.syn():
-                print("SYN flag not set")
+                print("Client handshake error: incorrect flag | expected SYN = True")
                 continue
             if not recv_packet.header.ack():
-                print("ACK flag not set")
+                print("Client handshake error: incorrect flag | expected ACK = True")
+                continue
+
+            if x + 1 != recv_packet.header.ack_number:
+                print(f"Client handshake error: incorrect ACK  | "
+                      f"expected {x + 1}, got {recv_packet.header.ack_number}")
                 continue
 
             y = recv_packet.header.seq_number
@@ -62,8 +63,11 @@ class BTCPClientSocket(BTCPSocket):
 
             self.socket.send(bytes(packet))
             print(f"Client send packet: {str(packet)}")
+            print("Client connected successfully")
+            return True
 
-            break
+        print("Client connection failure")
+        return False
 
     def send(self, data: bytes):
         """Send data originating from the application in a reliable way to the server.""" 

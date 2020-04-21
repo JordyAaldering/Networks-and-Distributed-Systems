@@ -25,14 +25,14 @@ class BTCPServerSocket(BTCPSocket):
     def accept(self):
         """Wait for the client to initiate a three-way handshake."""
         client = self.socket.accept()
-        print(f"Server connected: {client[1][0]}:{str(client[1][1])}")
+        print(f"Server connecting: {client[1][0]}:{str(client[1][1])}")
 
         msg = client[0].recv(HEADER_SIZE)
         recv_packet = Packet.from_bytes(msg)
         print(f"Server recv packet: {str(recv_packet)}")
 
         if not recv_packet.header.syn():
-            print("SYN flag not set")
+            print("Server handshake error: incorrect flag | expected SYN = True")
             return
         
         x = recv_packet.header.seq_number
@@ -46,28 +46,27 @@ class BTCPServerSocket(BTCPSocket):
 
         try: 
             msg = client[0].recv(HEADER_SIZE)
+            recv_packet = Packet.from_bytes(msg)
+            print(f"Server recv packet: {str(recv_packet)}")
         except TimeoutException as e:
             print(f"Socket timeout: {e}")
             return
-        
-        recv_packet = Packet.from_bytes(msg)
-        print(f"Server recv packet: {str(recv_packet)}")
 
-        if x + 1 != recv_packet.header.seq_number:
-            print("ACK not x + 1")
-            return
-        if y + 1 != recv_packet.header.ack_number:
-            print("SYN not y + 1")
-            return
         if not recv_packet.header.syn():
-            print("SYN flag not set")
+            print("Server handshake error: incorrect flag | expected SYN = True")
             return
         if not recv_packet.header.ack():
-            print("ACK flag not set")
+            print("Server handshake error: incorrect flag | expected ACK = True")
+            return
+
+        if x + 1 != recv_packet.header.seq_number:
+            print(f"Client handshake error: incorrect SYN  | expected {x + 1}, got {recv_packet.header.seq_number}")
+            return
+        if y + 1 != recv_packet.header.ack_number:
+            print(f"Client handshake error: incorrect ACK  | expected {y + 1}, got {recv_packet.header.ack_number}")
             return
         
-        # should return a tuple (host,port) -> conn,addr = s.accept() -> new socket object
-        #       used to communicate with the client, different socket than the listening
+        print("Server connected successfully")
         return client
 
     def recv(self) -> Packet:
