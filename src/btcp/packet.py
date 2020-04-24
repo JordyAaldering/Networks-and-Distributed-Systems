@@ -28,6 +28,7 @@ class Packet:
         header.checksum = 0
         if checksum != BTCPSocket.calculate_checksum(bytes(header) + msg[HEADER_SIZE:]):
             raise ChecksumsNotEqual
+        header.checksum = checksum
         
         return cls(header, msg[HEADER_SIZE:])
 
