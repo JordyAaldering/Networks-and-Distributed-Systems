@@ -1,6 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
-from src.btcp.exceptions import InvalidChecksum
+from btcp.exceptions import InvalidChecksum
 
 
 class BTCPSocket:

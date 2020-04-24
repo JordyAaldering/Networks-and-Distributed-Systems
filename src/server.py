@@ -2,8 +2,7 @@
 
 import argparse
 
-from src.btcp.packet import Packet
-from src.btcp.socket.server_socket import BTCPServerSocket
+from btcp.socket.server_socket import BTCPServerSocket, SEGMENT_SIZE
 
 
 def main():
@@ -14,18 +13,8 @@ def main():
     args = parser.parse_args()
 
     s = BTCPServerSocket(args.window, args.timeout)
-
-    # TODO Write your file transfer server code here using
-    #  your BTCPServerSocket's accept, and recv methods.
-    client = s.accept()
-
-    if client is not None:
-        recv = client.recv(1024)
-        packet = Packet.from_bytes(recv)
-        print(f"\nServer recv packet: {str(packet)}")
-    else:
-        print("Server connection failure")
-
+    s.accept()
+    s.recv(SEGMENT_SIZE)
     s.close()
 
 

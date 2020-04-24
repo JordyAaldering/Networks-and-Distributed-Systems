@@ -1,11 +1,11 @@
 from random import randrange
 from socket import timeout as TimeoutException
 
-from src.btcp.constants import *
-from src.btcp.header import Header
-from src.btcp.lossy_layer import LossyLayer
-from src.btcp.packet import Packet
-from src.btcp.socket.btcp_socket import BTCPSocket
+from btcp.constants import *
+from btcp.header import Header
+from btcp.lossy_layer import LossyLayer
+from btcp.packet import Packet
+from btcp.socket.btcp_socket import BTCPSocket
 
 
 class BTCPClientSocket(BTCPSocket):

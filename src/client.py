@@ -2,7 +2,8 @@
 
 import argparse
 
-from src.btcp.socket.client_socket import BTCPClientSocket
+from btcp.constants import ENCODING
+from btcp.socket.client_socket import BTCPClientSocket
 
 
 def main():
@@ -13,11 +14,8 @@ def main():
     args = parser.parse_args()
 
     s = BTCPClientSocket(args.window, args.timeout)
-
-    # TODO Write your file transfer client code using your implementation of
-    #  BTCPClientSocket's connect, send, and disconnect methods.
     s.connect()
-    s.send(bytes("Hello, World!", "utf-8"))
+    s.send(bytes("Hello, World!", ENCODING))
     s.close()
 
 

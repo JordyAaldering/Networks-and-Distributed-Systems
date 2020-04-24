@@ -1,6 +1,6 @@
 import struct
 
-from src.btcp.constants import HEADER_FORMAT
+from btcp.constants import HEADER_FORMAT
 
 
 class Header:

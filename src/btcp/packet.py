@@ -1,7 +1,7 @@
-from src.btcp.socket.btcp_socket import BTCPSocket
-from src.btcp.exceptions import ChecksumsNotEqual
-from src.btcp.header import Header
-from src.btcp.constants import HEADER_SIZE
+from btcp.socket.btcp_socket import BTCPSocket
+from btcp.exceptions import ChecksumsNotEqual
+from btcp.header import Header
+from btcp.constants import HEADER_SIZE
 
 
 class Packet:

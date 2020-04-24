@@ -1,10 +1,15 @@
 import sys
 import unittest
+
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE
 
+from btcp.constants import *
+from btcp.socket.client_socket import BTCPClientSocket
+from btcp.socket.server_socket import BTCPServerSocket
+
+window = 100
 timeout = 100
-win_size = 100
 
 INTF = "lo"
 NETEM_ADD = "sudo tc qdisc add dev {} root netem".format(INTF)
@@ -15,7 +20,7 @@ NETEM_DEL = "sudo tc qdisc del dev {} root netem".format(INTF)
 def run_command(command, cwd=None, shell=True):
     """ Run command with no output piping. """
     try:
-        process = Popen(command, shell=shell, cwd=cwd)
+        process = Popen(command, cwd=cwd, shell=shell)
         print(str(process))
     except Exception as inst:
         print(f"1. Problem running command:\n\t{str(command)}\n\t{str(inst)}")
@@ -52,6 +57,7 @@ class TestFramework(unittest.TestCase):
         run_command(NETEM_ADD)
 
         # Launch localhost server.
+        self.server = BTCPServerSocket(window, timeout)
 
     def tearDown(self):
         """ Clean up after testing. """
@@ -59,17 +65,24 @@ class TestFramework(unittest.TestCase):
         run_command(NETEM_DEL)
 
         # Close server.
+        self.server.close()
 
     def test_ideal_network(self):
         """ Reliability over an ideal src. """
         # Setup environment. Nothing to set.
         # Launch localhost client connecting to server.
+        client = BTCPClientSocket(window, timeout)
+        client.connect()
 
         # Client sends content to server.
+        client.send(bytes("Hello, World!", ENCODING))
 
         # Server receives content from client.
+        packet = self.server.recv(HEADER_SIZE)
 
         # Content received by server matches the content sent by client.
+        assert packet.data.decode(ENCODING) == "Hello, World!"
+        client.close()
 
     def test_flipping_network(self):
         """ Reliability over network with bit flips which sometimes results in lower layer packet loss. """
@@ -154,12 +167,12 @@ class TestFramework(unittest.TestCase):
 if __name__ == "__main__":
     # Parse command line arguments.
     parser = ArgumentParser(description="bTCP tests")
+    parser.add_argument("-w", "--window", help="Define bTCP window size used", type=int, default=window)
     parser.add_argument("-t", "--timeout", help="Define the timeout value used (ms)", type=int, default=timeout)
-    parser.add_argument("-w", "--window", help="Define bTCP window size used", type=int, default=win_size)
     args, extra = parser.parse_known_args()
 
+    window = args.window
     timeout = args.timeout
-    win_size = args.window
 
     # Pass the extra arguments to unittest.
     sys.argv[1:] = extra

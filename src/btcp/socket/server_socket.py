@@ -1,11 +1,12 @@
+import threading
 from random import randrange
 from socket import timeout as TimeoutException
 
-from src.btcp.constants import *
-from src.btcp.header import Header
-from src.btcp.lossy_layer import LossyLayer
-from src.btcp.packet import Packet
-from src.btcp.socket.btcp_socket import BTCPSocket
+from btcp.constants import *
+from btcp.header import Header
+from btcp.lossy_layer import LossyLayer
+from btcp.packet import Packet
+from btcp.socket.btcp_socket import BTCPSocket
 
 
 class BTCPServerSocket(BTCPSocket):
@@ -18,9 +19,17 @@ class BTCPServerSocket(BTCPSocket):
         self.socket.bind(SERVER_ADDR)
         self.socket.listen(8)
 
+        self.connection = None
+
+        self.listenThread = threading.Thread(target=self.listen)
+        self.listenThread.start()
+
     def lossy_layer_input(self, segment):
         """Called by the lossy layer from another thread whenever a segment arrives."""
         pass
+
+    def listen(self):
+        self.accept()
 
     def accept(self):
         """Wait for the client to initiate a three-way handshake."""
@@ -67,11 +76,11 @@ class BTCPServerSocket(BTCPSocket):
             return
         
         print("Server connected successfully")
-        return client
+        self.connection = client
 
-    def recv(self) -> Packet:
+    def recv(self, size: int) -> Packet:
         """Send any incoming data to the application layer."""
-        recv = self.socket.recv(SEGMENT_SIZE)
+        recv = self.connection.recv(size)
         packet = Packet.from_bytes(recv)
         print(f"Server recv packet: {str(packet)}")
         return packet
@@ -79,4 +88,5 @@ class BTCPServerSocket(BTCPSocket):
     def close(self):
         """Clean up any state."""
         self.lossy_layer.destroy()
+        self.listenThread.join()
         self.socket.close()

@@ -1,8 +1,8 @@
-from select import select
 import socket
 import threading
+from select import select
 
-from src.btcp.constants import *
+from btcp.constants import *
 
 
 def handle_incoming_segments(btcp_socket, event, udp_socket):
