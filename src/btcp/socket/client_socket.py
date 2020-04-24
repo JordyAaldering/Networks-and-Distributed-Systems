@@ -24,8 +24,8 @@ class BTCPClientSocket(BTCPSocket):
 
     def connect(self) -> bool:
         """Perform a three-way handshake to establish a connection."""
-        self.socket.connect((SERVER_IP, SERVER_PORT))
-        print(f"Client connecting: {SERVER_IP}:{SERVER_PORT}")
+        self.socket.connect(SERVER_ADDR)
+        print(f"Client connecting: {SERVER_ADDR}")
 
         x = randrange(65536)
 
