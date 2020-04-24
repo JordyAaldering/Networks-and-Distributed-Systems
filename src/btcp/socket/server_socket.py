@@ -24,10 +24,10 @@ class BTCPServerSocket(BTCPSocket):
 
     def accept(self):
         """Wait for the client to initiate a three-way handshake."""
-        client = self.socket.accept()
-        print(f"Server connecting: {client[1][0]}:{str(client[1][1])}")
+        client, address = self.socket.accept()
+        print(f"Server connecting: {address}")
 
-        msg = client[0].recv(HEADER_SIZE)
+        msg = client.recv(HEADER_SIZE)
         recv_packet = Packet.from_bytes(msg)
         print(f"Server recv packet: {str(recv_packet)}")
 
@@ -41,11 +41,11 @@ class BTCPServerSocket(BTCPSocket):
         header = Header(y, x + 1, Header.build_flags(syn=True, ack=True), self.window)
         packet = Packet(header, bytes())
 
-        client[0].send(bytes(packet))
+        client.send(bytes(packet))
         print(f"Server send packet: {str(packet)}")
 
         try: 
-            msg = client[0].recv(HEADER_SIZE)
+            msg = client.recv(HEADER_SIZE)
             recv_packet = Packet.from_bytes(msg)
             print(f"Server recv packet: {str(recv_packet)}")
         except TimeoutException as e:
@@ -71,7 +71,7 @@ class BTCPServerSocket(BTCPSocket):
 
     def recv(self) -> Packet:
         """Send any incoming data to the application layer."""
-        recv = self.socket.recv(1024)
+        recv = self.socket.recv(SEGMENT_SIZE)
         packet = Packet.from_bytes(recv)
         print(f"Server recv packet: {str(packet)}")
         return packet

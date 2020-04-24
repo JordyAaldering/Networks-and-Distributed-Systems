@@ -20,7 +20,7 @@ def main():
     client = s.accept()
 
     if client is not None:
-        recv = client[0].recv(1024)
+        recv = client.recv(1024)
         packet = Packet.from_bytes(recv)
         print(f"\nServer recv packet: {str(packet)}")
     else:
