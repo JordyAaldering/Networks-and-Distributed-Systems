@@ -13,9 +13,11 @@ def main():
     args = parser.parse_args()
 
     s = BTCPServerSocket(args.window, args.timeout)
-    s.accept()
-    s.recv(SEGMENT_SIZE)
-    s.close()
+    try:
+        s.accept()
+        s.listen()
+    finally:
+        s.close()
 
 
 if __name__ == '__main__':

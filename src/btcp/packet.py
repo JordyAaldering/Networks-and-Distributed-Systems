@@ -1,7 +1,7 @@
-from btcp.socket.btcp_socket import BTCPSocket
+from btcp.constants import HEADER_SIZE
 from btcp.exceptions import ChecksumsNotEqual
 from btcp.header import Header
-from btcp.constants import HEADER_SIZE
+from btcp.socket.btcp_socket import BTCPSocket
 
 
 class Packet:
@@ -11,11 +11,14 @@ class Packet:
         self.data = data
 
     def __bytes__(self):
+        self.calculate_checksum()
+        return bytes(self.header) + self.data
+
+    def calculate_checksum(self) -> int:
         self.header.checksum = 0
         checksum = BTCPSocket.calculate_checksum(bytes(self.header) + self.data)
         self.header.checksum = checksum
-
-        return bytes(self.header) + self.data
+        return checksum
 
     @classmethod
     def from_bytes(cls, msg: bytes):

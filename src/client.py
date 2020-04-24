@@ -2,7 +2,7 @@
 
 import argparse
 
-from btcp.constants import ENCODING
+from btcp.constants import *
 from btcp.socket.client_socket import BTCPClientSocket
 
 
@@ -14,9 +14,12 @@ def main():
     args = parser.parse_args()
 
     s = BTCPClientSocket(args.window, args.timeout)
-    s.connect()
-    s.send(bytes("Hello, World!", ENCODING))
-    s.close()
+    try:
+        s.connect(SERVER_IP, SERVER_PORT)
+        s.send(bytes("Hello, World!", ENCODING))
+        s.disconnect()
+    finally:
+        s.close()
 
 
 if __name__ == '__main__':

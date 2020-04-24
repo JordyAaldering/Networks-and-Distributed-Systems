@@ -16,77 +16,110 @@ class BTCPServerSocket(BTCPSocket):
         super().__init__(window, timeout)
         self.lossy_layer = LossyLayer(self, SERVER_IP, SERVER_PORT, CLIENT_IP, CLIENT_PORT)
 
-        self.socket.bind(SERVER_ADDR)
+        self.socket.bind((SERVER_IP, SERVER_PORT))
         self.socket.listen(8)
-
         self.connection = None
-
-        self.listenThread = threading.Thread(target=self.listen)
-        self.listenThread.start()
 
     def lossy_layer_input(self, segment):
         """Called by the lossy layer from another thread whenever a segment arrives."""
         pass
 
     def listen(self):
-        self.accept()
+        while True:
+            recv_packet = self.recv()
 
-    def accept(self):
+            if recv_packet.header.fin():
+                if self.disconnect(recv_packet):
+                    break
+
+    def accept(self) -> bool:
         """Wait for the client to initiate a three-way handshake."""
-        client, address = self.socket.accept()
-        print(f"Server connecting: {address}")
+        self.connection, address = self.socket.accept()
+        print(f"Server connecting: {address[0]}:{address[1]}")
 
-        msg = client.recv(HEADER_SIZE)
-        recv_packet = Packet.from_bytes(msg)
-        print(f"Server recv packet: {str(recv_packet)}")
-
-        if not recv_packet.header.syn():
-            print("Server handshake error: incorrect flag | expected SYN = True")
-            return
-        
-        x = recv_packet.header.seq_number
         y = randrange(65536)
 
-        header = Header(y, x + 1, Header.build_flags(syn=True, ack=True), self.window)
-        packet = Packet(header, bytes())
+        success, recv_packet = self._initiate_handshake()
+        if not success:
+            print("Server connection failure")
+            return False
 
-        client.send(bytes(packet))
-        print(f"Server send packet: {str(packet)}")
+        x = self._acknowledge_handshake(y, recv_packet, syn=True)
+        success = self._finish_handshake(x, y, syn=True)
+        if not success:
+            print("Server connection failure")
+            return False
 
-        try: 
-            msg = client.recv(HEADER_SIZE)
-            recv_packet = Packet.from_bytes(msg)
-            print(f"Server recv packet: {str(recv_packet)}")
-        except TimeoutException as e:
-            print(f"Socket timeout: {e}")
-            return
-
-        if not recv_packet.header.syn():
-            print("Server handshake error: incorrect flag | expected SYN = True")
-            return
-        if not recv_packet.header.ack():
-            print("Server handshake error: incorrect flag | expected ACK = True")
-            return
-
-        if x + 1 != recv_packet.header.seq_number:
-            print(f"Client handshake error: incorrect SYN  | expected {x + 1}, got {recv_packet.header.seq_number}")
-            return
-        if y + 1 != recv_packet.header.ack_number:
-            print(f"Client handshake error: incorrect ACK  | expected {y + 1}, got {recv_packet.header.ack_number}")
-            return
-        
         print("Server connected successfully")
-        self.connection = client
+        return True
 
-    def recv(self, size: int) -> Packet:
+    def disconnect(self, recv_packet: Packet) -> bool:
+        print(f"Server disconnecting")
+
+        y = randrange(65536)
+        x = self._acknowledge_handshake(y, recv_packet, fin=True)
+
+        success = self._finish_handshake(x, y, fin=True)
+        if not success:
+            print("Server disconnect failure")
+            return False
+
+        print("Server disconnected successfully")
+        return True
+
+    def recv(self) -> Packet:
         """Send any incoming data to the application layer."""
-        recv = self.connection.recv(size)
-        packet = Packet.from_bytes(recv)
-        print(f"Server recv packet: {str(packet)}")
-        return packet
+        msg = self.connection.recv(SEGMENT_SIZE)
+        recv_packet = Packet.from_bytes(msg)
+        print(f"Server recv packet: {str(recv_packet)}")
+        return recv_packet
 
     def close(self):
         """Clean up any state."""
         self.lossy_layer.destroy()
-        self.listenThread.join()
         self.socket.close()
+
+    def _initiate_handshake(self) -> (bool, Packet):
+        recv_packet = self.recv()
+        if not recv_packet.header.syn():
+            print("Server handshake error: incorrect flag | expected SYN = True")
+            return False, None
+
+        return True, recv_packet
+
+    def _acknowledge_handshake(self, y: int, recv_packet: Packet, syn=False, fin=False) -> int:
+        x = recv_packet.header.seq_number
+
+        send_header = Header(y, x + 1, Header.build_flags(syn=syn, fin=fin, ack=True), self.window)
+        send_packet = Packet(send_header, bytes())
+        send_packet.calculate_checksum()
+
+        self.connection.send(bytes(send_packet))
+        print(f"Server send packet: {str(send_packet)}")
+        return x
+
+    def _finish_handshake(self, x: int, y: int, syn=False, fin=False) -> bool:
+        try:
+            recv_packet = self.recv()
+        except TimeoutException as e:
+            print(f"Socket timeout: {e}")
+            return False
+
+        if syn and not recv_packet.header.syn():
+            print("Server handshake error: incorrect flag | expected SYN = True")
+            return False
+        if fin and not recv_packet.header.fin():
+            print("Server handshake error: incorrect flag | expected FIN = True")
+            return False
+        if not recv_packet.header.ack():
+            print("Server handshake error: incorrect flag | expected ACK = True")
+            return False
+
+        if x + 1 != recv_packet.header.seq_number:
+            print(f"Client handshake error: incorrect SYN  | expected {x + 1}, got {recv_packet.header.seq_number}")
+            return False
+        if y + 1 != recv_packet.header.ack_number:
+            print(f"Client handshake error: incorrect ACK  | expected {y + 1}, got {recv_packet.header.ack_number}")
+            return False
+
+        return True
