@@ -1,7 +1,6 @@
 import sys
 import unittest
 
-from threading import Thread
 from argparse import ArgumentParser
 from subprocess import Popen, PIPE
 
@@ -39,14 +38,14 @@ def run_command_with_output(command, input=None, cwd=None, shell=True):
     try:
         process = Popen(command, cwd=cwd, shell=shell, stdin=PIPE, stdout=PIPE)
     except Exception:
-        print(f"Problem running command:\n\t{str(command)}")
+        print(f"3. Problem running command:\n\t{str(command)}")
         return None
 
     # No pipes set for stdin, stdout, and stdout streams; so does effectively only just wait for process ends.
     [std_out_data, std_err_data] = process.communicate(input)
 
     if process.returncode:
-        print(f"{std_err_data}\nProblem running command:\n\t{str(command)} {process.returncode}")
+        print(f"{std_err_data}\n4. Problem running command:\n\t{str(command)} {process.returncode}")
 
     return std_out_data
 
@@ -55,11 +54,17 @@ class TestFramework(unittest.TestCase):
     def setUp(self):
         """ Prepare for testing. """
         run_command(NETEM_ADD)
-        # self.server = BTCPServerSocket(window, timeout)
+
+        self.content = bytes()
+        with open("file.in", "rb") as f:
+            self.content = f.read()
+        
+        self.process = Popen(["python3", "./server.py"])
 
     def tearDown(self):
         """ Clean up after testing. """
         run_command(NETEM_DEL)
+        self.process.kill()
 
     def test_ideal_network(self):
         """ Reliability over an ideal src. """
@@ -98,7 +103,7 @@ class TestFramework(unittest.TestCase):
     def test_delayed_network(self):
         """ Reliability over network with delay relative to the timeout value. """
         # Setup environment.
-        run_command(NETEM_CHANGE.format("delay " + str(timeout) + "ms 20ms"))
+        run_command(NETEM_CHANGE.format(f"delay {str(timeout)}ms 20ms"))
 
         self._test_client()
 
@@ -110,18 +115,16 @@ class TestFramework(unittest.TestCase):
         self._test_client()
 
     def _test_client(self):
-        # Launch localhost client connecting to server.
         client = BTCPClientSocket(window, timeout)
         client.connect(SERVER_IP, SERVER_PORT)
 
         # Client sends content to server.
-        client.send(bytes("Hello, World!", ENCODING))
-
-        # Server receives content from client.
-        packet = self.server.recv(HEADER_SIZE)
+        client.send(self.content)
 
         # Content received by server matches the content sent by client.
-        assert packet.data.decode(ENCODING) == "Hello, World!"
+        with open("file.out", "rb") as f:
+            assert f.read() == self.content
+
         client.disconnent()
         client.close()
 

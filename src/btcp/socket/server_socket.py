@@ -21,7 +21,9 @@ class BTCPServerSocket(BTCPSocket):
 
         self.socket.bind((SERVER_IP, SERVER_PORT))
         self.socket.listen(8)
+
         self.connection = None
+        self.history = []
 
     def lossy_layer_input(self, segment):
         """Called by the lossy layer from another thread whenever a segment arrives."""
@@ -40,6 +42,7 @@ class BTCPServerSocket(BTCPSocket):
                 self.accept(recv_packet)
             elif recv_packet.header.fin():
                 self.disconnect(recv_packet)
+                return
 
     def accept(self, recv_packet: Packet) -> bool:
         """Wait for the client to initiate a three-way handshake."""
@@ -73,6 +76,8 @@ class BTCPServerSocket(BTCPSocket):
         """Send any incoming data to the application layer."""
         msg = self.connection.recv(SEGMENT_SIZE)
         recv_packet = Packet.from_bytes(msg)
+        self.history.append(recv_packet)
+
         print(f"Server recv packet: {str(recv_packet)}")
         return recv_packet
 

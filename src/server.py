@@ -9,7 +9,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-w", "--window", help="Define bTCP window size", type=int, default=100)
     parser.add_argument("-t", "--timeout", help="Define bTCP timeout in milliseconds", type=int, default=100)
-    parser.add_argument("-o", "--output", help="Where to store the file", default="output.file")
+    parser.add_argument("-o", "--output", help="Where to store the file", default="file.out")
     args = parser.parse_args()
 
     s = BTCPServerSocket(args.window, args.timeout)
@@ -17,6 +17,10 @@ def main():
         s.listen()
     finally:
         s.close()
+    
+    with open(args.output, "wb") as f:
+        for msg in s.history:
+            f.write(msg.data)
 
 
 if __name__ == '__main__':
