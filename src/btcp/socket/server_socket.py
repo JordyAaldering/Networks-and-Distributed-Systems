@@ -10,13 +10,10 @@ from btcp.socket.btcp_socket import BTCPSocket
 
 
 class BTCPServerSocket(BTCPSocket):
-    """A server application makes use of the services provided by bTCP by calling accept, recv, and close."""
 
     def __init__(self, window, timeout):
         super().__init__(window, timeout)
         self.lossy_layer = LossyLayer(self, SERVER_IP, SERVER_PORT, CLIENT_IP, CLIENT_PORT)
-
-        
         self.socket.bind((SERVER_IP, SERVER_PORT))
         self.socket.listen(8)
 
@@ -24,7 +21,7 @@ class BTCPServerSocket(BTCPSocket):
         self.history = []
 
     def lossy_layer_input(self, segment):
-        """Called by the lossy layer from another thread whenever a segment arrives."""
+        """ Called by the lossy layer from another thread whenever a segment arrives. """
         pass
 
     def listen(self):
@@ -43,7 +40,7 @@ class BTCPServerSocket(BTCPSocket):
                 return
 
     def accept(self, recv_packet: Packet) -> bool:
-        """Wait for the client to initiate a three-way handshake."""
+        """ Wait for the client to initiate a three-way handshake. """
         y = randrange(65536)
 
         x = self._acknowledge_handshake(y, recv_packet, syn=True)
@@ -71,7 +68,7 @@ class BTCPServerSocket(BTCPSocket):
         return True
 
     def recv(self) -> Packet:
-        """Send any incoming data to the application layer."""
+        """ Send any incoming data to the application layer. """
         msg = self.connection.recv(SEGMENT_SIZE)
         recv_packet = Packet.from_bytes(msg)
         self.history.append(recv_packet)
@@ -80,7 +77,7 @@ class BTCPServerSocket(BTCPSocket):
         return recv_packet
 
     def close(self):
-        """Clean up any state."""
+        """ Clean up any state. """
         self.lossy_layer.destroy()
         if self.connection is not None:
             self.connection.close()

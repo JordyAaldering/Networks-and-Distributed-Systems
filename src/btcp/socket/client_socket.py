@@ -9,21 +9,17 @@ from btcp.socket.btcp_socket import BTCPSocket
 
 
 class BTCPClientSocket(BTCPSocket):
-    """
-    A client application makes use of the services provided
-    by bTCP by calling connect, send, disconnect, and close.
-    """
 
     def __init__(self, window, timeout):
         super().__init__(window, timeout)
         self.lossy_layer = LossyLayer(self, CLIENT_IP, CLIENT_PORT, SERVER_IP, SERVER_PORT)
 
     def lossy_layer_input(self, segment):
-        """Called by the lossy layer from another thread whenever a segment arrives."""
+        """ Called by the lossy layer from another thread whenever a segment arrives. """
         pass
 
     def connect(self, ip: str, port: int, tries=5) -> bool:
-        """Perform a three-way handshake to establish a connection."""
+        """ Perform a three-way handshake to establish a connection. """
         self.socket.connect((ip, port))
         print(f"Client connecting: {ip}:{port}")
 
@@ -42,14 +38,14 @@ class BTCPClientSocket(BTCPSocket):
         return False
 
     def send(self, data: bytes):
-        """Send data originating from the application in a reliable way to the server."""
+        """ Send data originating from the application in a reliable way to the server. """
         send_header = Header(0, 0, 0, self.window, len(data))
         send_packet = Packet(send_header, data)
         send_packet.calculate_checksum()
         self.socket.send(bytes(send_packet))
 
     def disconnect(self, tries=5):
-        """Perform a handshake to terminate a connection."""
+        """ Perform a handshake to terminate a connection. """
         print("Client disconnecting")
 
         x = randrange(65536)
@@ -67,7 +63,7 @@ class BTCPClientSocket(BTCPSocket):
         return False
 
     def close(self):
-        """Clean up any state."""
+        """ Clean up any state. """
         self.lossy_layer.destroy()
         self.socket.close()
 

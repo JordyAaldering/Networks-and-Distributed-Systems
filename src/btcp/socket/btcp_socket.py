@@ -14,7 +14,7 @@ class BTCPSocket:
 
     @staticmethod
     def calculate_checksum(data: bytes) -> int:
-        """Return the Internet checksum of data."""
+        """ Return the Internet checksum of data. """
         s = 0
         data = str(data)
         for i in range(0, len(data), 2):
