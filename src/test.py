@@ -116,18 +116,16 @@ class TestFramework(unittest.TestCase):
 
     def _test_client(self):
         client = BTCPClientSocket(window, timeout)
-        client.connect(SERVER_IP, SERVER_PORT)
-
-        # Client sends content to server.
-        client.send(self.content)
+        try:
+            client.connect(SERVER_IP, SERVER_PORT)
+            client.send(self.content)
+            client.disconnent()
+        finally:
+            client.close()
 
         # Content received by server matches the content sent by client.
         with open("file.out", "rb") as f:
             assert f.read() == self.content
-
-        client.disconnent()
-        client.close()
-
 
 if __name__ == "__main__":
     # Parse command line arguments.
