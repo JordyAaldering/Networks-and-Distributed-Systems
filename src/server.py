@@ -16,6 +16,7 @@ def main():
     try:
         s.accept()
         s.listen()
+        input()
     finally:
         s.close()
 

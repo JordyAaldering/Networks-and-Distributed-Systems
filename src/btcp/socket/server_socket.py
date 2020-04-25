@@ -1,4 +1,4 @@
-import threading
+from threading import Thread
 from random import randrange
 from socket import timeout as TimeoutException
 
@@ -18,6 +18,8 @@ class BTCPServerSocket(BTCPSocket):
 
         self.socket.bind((SERVER_IP, SERVER_PORT))
         self.socket.listen(8)
+
+        self.listenThread = None
         self.connection = None
 
     def lossy_layer_input(self, segment):
@@ -25,6 +27,10 @@ class BTCPServerSocket(BTCPSocket):
         pass
 
     def listen(self):
+        self.listenThread = Thread(target=self._listen)
+        self.listenThread.start()
+
+    def _listen(self):
         while True:
             recv_packet = self.recv()
 
@@ -77,6 +83,7 @@ class BTCPServerSocket(BTCPSocket):
     def close(self):
         """Clean up any state."""
         self.lossy_layer.destroy()
+        self.listenThread.join()
         self.socket.close()
 
     def _initiate_handshake(self) -> (bool, Packet):
