@@ -22,30 +22,30 @@ def run_command(command, cwd=None, shell=True):
     try:
         process = Popen(command, cwd=cwd, shell=shell)
         print(str(process))
-    except Exception as inst:
-        print(f"1. Problem running command:\n\t{str(command)}\n\t{str(inst)}")
+    except Exception as e:
+        print(f"1. Problem running command:\n\t{str(command)}\n\t{e}")
         return
 
     # Wait for the process to end.
     process.communicate()
 
     if process.returncode:
-        print(f"2. Problem running command:\n\t{str(command)} {process.returncode}")
+        print(f"2. Problem running command:\n\t{str(command)}: {process.returncode}")
 
 
-def run_command_with_output(command, input=None, cwd=None, shell=True):
+def run_command_with_output(command, inp=None, cwd=None, shell=True):
     """ Run command and retrieve output. """
     try:
         process = Popen(command, cwd=cwd, shell=shell, stdin=PIPE, stdout=PIPE)
-    except Exception:
-        print(f"3. Problem running command:\n\t{str(command)}")
+    except Exception as e:
+        print(f"3. Problem running command:\n\t{str(command)}\n\t{e}")
         return None
 
     # No pipes set for stdin, stdout, and stdout streams; so does effectively only just wait for process ends.
-    [std_out_data, std_err_data] = process.communicate(input)
+    [std_out_data, std_err_data] = process.communicate(inp)
 
     if process.returncode:
-        print(f"{std_err_data}\n4. Problem running command:\n\t{str(command)} {process.returncode}")
+        print(f"{std_err_data}\n4. Problem running command:\n\t{str(command)}: {process.returncode}")
 
     return std_out_data
 
@@ -55,7 +55,6 @@ class TestFramework(unittest.TestCase):
         """ Prepare for testing. """
         run_command(NETEM_ADD)
 
-        self.content = bytes()
         with open("file.in", "rb") as f:
             self.content = f.read()
         
@@ -68,50 +67,42 @@ class TestFramework(unittest.TestCase):
 
     def test_ideal_network(self):
         """ Reliability over an ideal src. """
-        # Setup environment. Nothing to set.
-
         self._test_client()
 
     def test_flipping_network(self):
         """ Reliability over network with bit flips which sometimes results in lower layer packet loss. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("corrupt 1%"))
-
         self._test_client()
 
     def test_duplicates_network(self):
         """ Reliability over network with duplicate packets. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("duplicate 10%"))
-
         self._test_client()
 
     def test_lossy_network(self):
         """ Reliability over network with packet loss. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("loss 10% 25%"))
-
         self._test_client()
 
     def test_reordering_network(self):
         """ Reliability over network with packet reordering. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("delay 20ms reorder 25% 50%"))
-
         self._test_client()
 
     def test_delayed_network(self):
         """ Reliability over network with delay relative to the timeout value. """
         # Setup environment.
         run_command(NETEM_CHANGE.format(f"delay {str(timeout)}ms 20ms"))
-
         self._test_client()
 
     def test_all_bad_network(self):
         """ Reliability over network with all of the above problems. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("corrupt 1% duplicate 10% loss 10% 25% delay 20ms reorder 25% 50%"))
-
         self._test_client()
 
     def _test_client(self):
