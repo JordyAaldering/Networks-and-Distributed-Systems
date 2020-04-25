@@ -79,6 +79,9 @@ class BTCPServerSocket(BTCPSocket):
     def close(self):
         """Clean up any state."""
         self.lossy_layer.destroy()
+        if self.connection is not None:
+            self.connection.close()
+            self.connection = None
         self.socket.close()
 
     def _acknowledge_handshake(self, y: int, recv_packet: Packet, syn=False, fin=False) -> int:

@@ -55,20 +55,16 @@ class TestFramework(unittest.TestCase):
     def setUp(self):
         """ Prepare for testing. """
         run_command(NETEM_ADD)
-        self.server = BTCPServerSocket(window, timeout)
-        self.serverThread = Thread(target=self.server.listen)
-        self.serverThread.start()
+        # self.server = BTCPServerSocket(window, timeout)
 
     def tearDown(self):
         """ Clean up after testing. """
         run_command(NETEM_DEL)
-        self.serverThread.join()
-        self.server.close()
 
     def test_ideal_network(self):
         """ Reliability over an ideal src. """
         # Setup environment. Nothing to set.
-        
+
         self._test_client()
 
     def test_flipping_network(self):
@@ -76,42 +72,42 @@ class TestFramework(unittest.TestCase):
         # Setup environment.
         run_command(NETEM_CHANGE.format("corrupt 1%"))
 
-        _test_client()
+        self._test_client()
 
     def test_duplicates_network(self):
         """ Reliability over network with duplicate packets. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("duplicate 10%"))
 
-        _test_client()
+        self._test_client()
 
     def test_lossy_network(self):
         """ Reliability over network with packet loss. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("loss 10% 25%"))
 
-        _test_client()
+        self._test_client()
 
     def test_reordering_network(self):
         """ Reliability over network with packet reordering. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("delay 20ms reorder 25% 50%"))
 
-        _test_client()
+        self._test_client()
 
     def test_delayed_network(self):
         """ Reliability over network with delay relative to the timeout value. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("delay " + str(timeout) + "ms 20ms"))
 
-        _test_client()
+        self._test_client()
 
     def test_all_bad_network(self):
         """ Reliability over network with all of the above problems. """
         # Setup environment.
         run_command(NETEM_CHANGE.format("corrupt 1% duplicate 10% loss 10% 25% delay 20ms reorder 25% 50%"))
 
-        _test_client()
+        self._test_client()
 
     def _test_client(self):
         # Launch localhost client connecting to server.
@@ -126,6 +122,7 @@ class TestFramework(unittest.TestCase):
 
         # Content received by server matches the content sent by client.
         assert packet.data.decode(ENCODING) == "Hello, World!"
+        client.disconnent()
         client.close()
 
 
