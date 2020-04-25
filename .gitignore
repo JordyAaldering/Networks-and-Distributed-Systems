@@ -5,3 +5,7 @@ __pycache__/
 # IDE generated files
 .idea/
 .vscode/
+
+# In and out files for testing
+file.in
+file.out
