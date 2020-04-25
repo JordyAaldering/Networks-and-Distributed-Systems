@@ -32,23 +32,6 @@ def run_command(command, cwd=None, shell=True):
         print(f"2. Problem running command:\n\t{str(command)}: {process.returncode}")
 
 
-def run_command_with_output(command, inp=None, cwd=None, shell=True):
-    """ Run command and retrieve output. """
-    try:
-        process = Popen(command, cwd=cwd, shell=shell, stdin=PIPE, stdout=PIPE)
-    except Exception as e:
-        print(f"3. Problem running command:\n\t{str(command)}\n\t{e}")
-        return None
-
-    # No pipes set for stdin, stdout, and stdout streams; so does effectively only just wait for process ends.
-    [std_out_data, std_err_data] = process.communicate(inp)
-
-    if process.returncode:
-        print(f"{std_err_data}\n4. Problem running command:\n\t{str(command)}: {process.returncode}")
-
-    return std_out_data
-
-
 class TestFramework(unittest.TestCase):
     def setUp(self):
         """ Prepare for testing. """
