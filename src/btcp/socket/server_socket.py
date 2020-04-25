@@ -16,10 +16,11 @@ class BTCPServerSocket(BTCPSocket):
         super().__init__(window, timeout)
         self.lossy_layer = LossyLayer(self, SERVER_IP, SERVER_PORT, CLIENT_IP, CLIENT_PORT)
 
+        self.window = window
+        self.timeout = timeout
+
         self.socket.bind((SERVER_IP, SERVER_PORT))
         self.socket.listen(8)
-
-        self.listenThread = None
         self.connection = None
 
     def lossy_layer_input(self, segment):
@@ -27,28 +28,22 @@ class BTCPServerSocket(BTCPSocket):
         pass
 
     def listen(self):
-        self.listenThread = Thread(target=self._listen)
-        self.listenThread.start()
-
-    def _listen(self):
         while True:
+            if self.connection is None:
+                self.connection, address = self.socket.accept()
+                print(f"Server connecting: {address[0]}:{address[1]}")
+                continue
+
             recv_packet = self.recv()
 
-            if recv_packet.header.fin():
-                if self.disconnect(recv_packet):
-                    break
+            if recv_packet.header.syn():
+                self.accept(recv_packet)
+            elif recv_packet.header.fin():
+                self.disconnect(recv_packet)
 
-    def accept(self) -> bool:
+    def accept(self, recv_packet: Packet) -> bool:
         """Wait for the client to initiate a three-way handshake."""
-        self.connection, address = self.socket.accept()
-        print(f"Server connecting: {address[0]}:{address[1]}")
-
         y = randrange(65536)
-
-        success, recv_packet = self._initiate_handshake()
-        if not success:
-            print("Server connection failure")
-            return False
 
         x = self._acknowledge_handshake(y, recv_packet, syn=True)
         success = self._finish_handshake(x, y, syn=True)
@@ -71,6 +66,7 @@ class BTCPServerSocket(BTCPSocket):
             return False
 
         print("Server disconnected successfully")
+        self.connection = None
         return True
 
     def recv(self) -> Packet:
@@ -83,16 +79,7 @@ class BTCPServerSocket(BTCPSocket):
     def close(self):
         """Clean up any state."""
         self.lossy_layer.destroy()
-        self.listenThread.join()
         self.socket.close()
-
-    def _initiate_handshake(self) -> (bool, Packet):
-        recv_packet = self.recv()
-        if not recv_packet.header.syn():
-            print("Server handshake error: incorrect flag | expected SYN = True")
-            return False, None
-
-        return True, recv_packet
 
     def _acknowledge_handshake(self, y: int, recv_packet: Packet, syn=False, fin=False) -> int:
         x = recv_packet.header.seq_number

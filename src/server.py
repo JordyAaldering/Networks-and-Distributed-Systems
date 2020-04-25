@@ -14,9 +14,7 @@ def main():
 
     s = BTCPServerSocket(args.window, args.timeout)
     try:
-        s.accept()
         s.listen()
-        input()
     finally:
         s.close()
 
