@@ -21,7 +21,6 @@ def run_command(command, cwd=None, shell=True):
     """ Run command with no output piping. """
     try:
         process = Popen(command, cwd=cwd, shell=shell)
-        print(str(process))
     except Exception as e:
         print(f"1. Problem running command:\n\t{str(command)}\n\t{e}")
         return

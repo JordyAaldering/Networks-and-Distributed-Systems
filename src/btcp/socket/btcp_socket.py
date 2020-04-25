@@ -1,4 +1,4 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 
 from btcp.exceptions import InvalidChecksum
 
@@ -6,8 +6,11 @@ from btcp.exceptions import InvalidChecksum
 class BTCPSocket:
     def __init__(self, window, timeout):
         self.socket = socket(AF_INET, SOCK_STREAM)
+        self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.socket.settimeout(timeout)
+
         self.window = window
+        self.timeout = timeout
 
     @staticmethod
     def calculate_checksum(data: bytes) -> int:

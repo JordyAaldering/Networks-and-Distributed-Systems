@@ -16,9 +16,7 @@ class BTCPServerSocket(BTCPSocket):
         super().__init__(window, timeout)
         self.lossy_layer = LossyLayer(self, SERVER_IP, SERVER_PORT, CLIENT_IP, CLIENT_PORT)
 
-        self.window = window
-        self.timeout = timeout
-
+        
         self.socket.bind((SERVER_IP, SERVER_PORT))
         self.socket.listen(8)
 
