@@ -2,6 +2,9 @@
 __pycache__/
 .python-version
 
-# IDE generated files
+# IDE generated folders
 .idea/
 .vscode/
+
+# Generated files
+.DS_Store
