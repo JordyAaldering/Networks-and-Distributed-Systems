@@ -13,7 +13,6 @@
 *.db  binary
 *.p   binary
 *.pkl binary
-*.pickle binary
 *.pyc binary
 *.pyd binary
 *.pyo binary
